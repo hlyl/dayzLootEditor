@@ -182,14 +182,21 @@ def getItemsToZero(names, itemType):
     return cursor.fetchall()
 
 
-def getType(type, subtype=None):
+def getType(type, subtype=None, trader=None):
+    print("DEBUG trader:", trader)
     global lastQuery
-    lastQuery = "select * \
-                from items \
-                where type = '" + type + "'"
+    lastQuery = f"select * from items where type = '{type}'"
 
     if subtype is not None:
-        lastQuery += " and subtype = '" + subtype + "';"
+        lastQuery += f" and subtype = '{subtype}'"
+
+    if trader is not None:
+        print("DEBUG - IN IT")
+        lastQuery += f" and trader_loc = '{trader}'"   
+
+    lastQuery += f";"     
+
+    print("DEBUG: getType lastQuery:", lastQuery)
 
     cursor = connection().cursor()
     cursor.execute(lastQuery)
@@ -201,21 +208,34 @@ def getSubtypes():
     cursor.execute("SELECT subtype FROM items group by subtype")
     return [row[0] if row[0] is not None else "" for row in cursor.fetchall()]
 
+def getTraderLocs():
+    cursor = connection().cursor()
+    cursor.execute("SELECT trader_loc FROM items group by trader_loc")
+    raw_results = cursor.fetchall()
+    results = [row[0] if row[0] is not None else "" for row in raw_results]
+    print("DEBUG results:", results)
+    return sorted(results)
 
 def getSubtypesMods(mod):
     cursor = connection().cursor()
     cursor.execute("SELECT subtype, mods FROM items WHERE mods = ? group by subtype", mod)
     return [_[0] for _ in cursor.fetchall()]
 
-
-def getCategory(category, subtype=None):
+def getCategory(category, subtype=None, trader=None):
     global lastQuery
-    lastQuery = "select * \
-                from items \
-                where type = '" + category + "'"
+
+    lastQuery = f"select * from items where type = '{category}'"
 
     if subtype is not None:
-        lastQuery += " and subtype = '" + subtype + "';"
+        lastQuery += f" and subtype = '{subtype}'"
+
+    if trader is not None:
+        print("DEBUG - IN IT")
+        lastQuery += f" and trader_loc = '{trader}'"   
+
+    lastQuery += f";"        
+
+    print("DEBUG: getCategory lastQuery:", lastQuery)  
 
     cursor = connection().cursor()
     cursor.execute(lastQuery)
@@ -434,8 +454,11 @@ def update(values):
     query = "UPDATE items SET nominal = " + str(values["nominal"]) + ", min= " + str(values["min"]) + ", \
         restock= " + str(values["restock"]) + ", lifetime= " + str(values["lifetime"]) + ", subtype= '" + str(
         values["subtype"]) + "'" \
-            + ", deloot= '" + str(values["deloot"]) + "', mods= '" + str(values["mod"]) + "' WHERE name = '" + str(
-        values["name"] + "'")
+            + ", deloot= '" + str(values["deloot"]) + "', mods= '" + str(values["mod"]) + "',"  "trader_loc = " + str(values["trader"]) + " WHERE name = '" + str(
+        values["name"] + "'" )
+
+    print("DEBUG query", query)
+     
 
     conn = connection()
     cursor = conn.cursor()
@@ -684,11 +707,14 @@ ADD COLUMN `buyprice` INT(11) NULL DEFAULT NULL AFTER `subtype`,\
 ADD COLUMN `sellprice` INT(11) NULL DEFAULT NULL AFTER `buyprice`, \
 ADD COLUMN `traderCat` VARCHAR(3) NULL DEFAULT NULL AFTER `sellprice`,\
 ADD COLUMN `traderExclude` TINYINT(1) UNSIGNED ZEROFILL NOT NULL DEFAULT '0' AFTER `traderCat`;"
+# TODO: DB update does not seem to work
+#ADD COLUMN `trader_loc` TINYINT(1) UNSIGNED ZEROFILL NOT NULL DEFAULT '0' AFTER `traderExclude`;"
 
     conn = connection()
     cursor = conn.cursor()
     cursor.execute(query)
     conn.commit()
+    print("comitted db")
 
 
 def addNewConstraints():
