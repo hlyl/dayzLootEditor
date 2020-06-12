@@ -1,0 +1,17 @@
+https://github.com/VincentSchmid/dayzLootEditor
+
+
+doing db check
+mysql: [Warning] Using a password on the command line interface can be
+
+dict {'text': '', 'image': '', 'values': '', 'open': 0, 'tags': ''}
+Exception in Tkinter callback
+Traceback (most recent call last):
+  File "tkinter\__init__.py", line 1705, in __call__
+  File "frontend.py", line 704, in fillEntryBoxes
+  File "frontend.py", line 746, in getSelectedValues
+  File "dao.py", line 616, in getFlags
+pyodbc.ProgrammingError: ('42S02', "[42S02] [MySQL][ODBC 8.0(w) Driver
+.0.20]Table 'jabba2.items' doesn't exist (1146) (SQLPrepare)")
+
+
